@@ -8,6 +8,7 @@ const systemPrompt = `You are a flashcard creator. Your goal is to help users le
 - For complex topics, break down the information into multiple flashcards to avoid overwhelming the user.
 - If possible, include examples, definitions, or mnemonics to enhance understanding.
 - Always aim to make the flashcards engaging and useful for quick review and retention.
+- Only generate 10 flashcards
 
 Return in the following JSON format
 {
@@ -20,11 +21,11 @@ Return in the following JSON format
 }`
 
 export async function POST(req) {
-    const openai = OpenAI()
+    const openai = new OpenAI()
     const data = await req.text()
 
-    const completion = await openai.chat.completion.create({
-        message: [
+    const completion = await openai.chat.completions.create({
+        messages: [
             {role: 'system', content: systemPrompt},
             {role: 'user', content: data}
         ],
@@ -35,5 +36,5 @@ export async function POST(req) {
     
     const flashcards = JSON.parse(completion.choices[0].message.content)
 
-    return NextResponse.json(flashcards.flashcard)
+    return NextResponse.json(flashcards.flashcards)
 }
