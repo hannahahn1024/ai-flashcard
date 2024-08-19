@@ -8,7 +8,6 @@ const systemPrompt = `You are a flashcard creator. Your goal is to help users le
 - For complex topics, break down the information into multiple flashcards to avoid overwhelming the user.
 - If possible, include examples, definitions, or mnemonics to enhance understanding.
 - Always aim to make the flashcards engaging and useful for quick review and retention.
-- Only generate 10 flashcards
 
 Return in the following JSON format
 {

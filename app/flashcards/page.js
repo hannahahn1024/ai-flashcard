@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-
 import { db } from "@/firebase";
 import { useRouter } from "next/navigation";
-import { collection, doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import {
   Card,
   CardActionArea,
@@ -13,6 +12,7 @@ import {
   Container,
   Grid,
   Typography,
+  Button,
 } from "@mui/material";
 
 export default function Flashcards() {
@@ -28,7 +28,6 @@ export default function Flashcards() {
 
       if (docSnap.exists()) {
         const collections = docSnap.data().flashcards || [];
-        console.log(collections);
         setFlashcards(collections);
       } else {
         await setDoc(docRef, { flashcards: [] });
@@ -43,6 +42,22 @@ export default function Flashcards() {
 
   const handleCardClick = (id) => {
     router.push(`/flashcard?id=${id}`);
+  };
+
+  const handleRemoveFlashcard = async (name) => {
+    if (!user) return;
+    const docRef = doc(collection(db, "users"), user.id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const collections = docSnap.data().flashcards || [];
+      const updatedFlashcards = collections.filter(
+        (flashcard) => flashcard.name !== name
+      );
+
+      await updateDoc(docRef, { flashcards: updatedFlashcards });
+      setFlashcards(updatedFlashcards);
+    }
   };
 
   return (
@@ -66,6 +81,14 @@ export default function Flashcards() {
                   <Typography variant="h6">{flashcard.name}</Typography>
                 </CardContent>
               </CardActionArea>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => handleRemoveFlashcard(flashcard.name)}
+                sx={{ m: 2 }}
+              >
+                Remove
+              </Button>
             </Card>
           </Grid>
         ))}

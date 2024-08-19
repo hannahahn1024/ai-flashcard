@@ -18,12 +18,13 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  CircularProgress,
+  Slider,
 } from "@mui/material";
 import {
   collection,
   doc,
   getDoc,
-  setDoc,
   writeBatch,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
@@ -36,15 +37,25 @@ export default function Generate() {
   const [text, setText] = useState("");
   const [name, setName] = useState("");
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [numFlashcards, setNumFlashcards] = useState(5); // Default number of flashcards to generate
   const router = useRouter();
 
   const handleSubmit = async () => {
+    setLoading(true);
     fetch("api/generate", {
       method: "POST",
-      body: text,
+      body: JSON.stringify({ text, numFlashcards }),
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
       .then((res) => res.json())
-      .then((data) => setFlashcards(data));
+      .then((data) => {
+        setFlashcards(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   };
 
   const handleCardClick = (id) => {
@@ -106,8 +117,17 @@ export default function Generate() {
           alignItems: "center",
         }}
       >
-        <Typography variant="h4">Generate Flashcards</Typography>
-        <Paper sx={{ p: 4, width: "100%" }}>
+        <Typography variant="h4" sx={{ color: "#7b1fa2" }}>
+          Generate Flashcards
+        </Typography>
+        <Paper
+          sx={{
+            p: 4,
+            width: "100%",
+            backgroundColor: "#f3e5f5", // Light purple background
+            boxShadow: "0px 4px 12px rgba(123, 31, 162, 0.2)", // Purple shadow
+          }}
+        >
           <TextField
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -118,27 +138,70 @@ export default function Generate() {
             variant="outlined"
             sx={{
               mb: 2,
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#ab47bc", // Purple border
+                },
+                "&:hover fieldset": {
+                  borderColor: "#8e24aa", // Darker purple border on hover
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "#7b1fa2", // Purple label
+              },
+            }}
+          />
+          <Typography gutterBottom sx={{ color: "#7b1fa2" }}>
+            Number of Flashcards: {numFlashcards}
+          </Typography>
+          <Slider
+            value={numFlashcards}
+            onChange={(e, newValue) => setNumFlashcards(newValue)}
+            min={1}
+            max={20}
+            step={1}
+            sx={{
+              mb: 2,
+              color: "#7b1fa2", // Purple slider
             }}
           />
           <Button
             variant="contained"
-            color="primary"
+            sx={{
+              backgroundColor: "#7b1fa2", // Purple background
+              color: "white",
+              "&:hover": {
+                backgroundColor: "#6a1b9a", // Darker purple on hover
+              },
+            }}
             onClick={handleSubmit}
             fullWidth
           >
-            {" "}
             Submit
           </Button>
         </Paper>
       </Box>
 
-      {flashcards.length > 0 && (
+      {loading && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <CircularProgress sx={{ color: "#7b1fa2" }} />
+        </Box>
+      )}
+
+      {!loading && flashcards.length > 0 && (
         <Box sx={{ mt: 4 }}>
-          <Typography variant="h5">Flashcards Preview</Typography>
+          <Typography variant="h5" sx={{ color: "#7b1fa2" }}>
+            Flashcards Preview
+          </Typography>
           <Grid container spacing={3}>
             {flashcards.map((flashcard, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
-                <Card>
+                <Card
+                  sx={{
+                    backgroundColor: "#f3e5f5", // Light purple background
+                    boxShadow: "0px 4px 12px rgba(123, 31, 162, 0.2)", // Purple shadow
+                  }}
+                >
                   <CardActionArea
                     onClick={() => {
                       handleCardClick(index);
@@ -165,10 +228,12 @@ export default function Generate() {
                             height: "100%",
                             backfaceVisibility: "hidden",
                             display: "flex",
-                            justifyContent: "center",
+                            flexDirection: "column", // Align content vertically
+                            justifyContent: "flex-start", // Start content at the top
                             alignItems: "center",
                             padding: 2,
                             boxSizing: "border-box",
+                            overflowY: "auto", // Enable vertical scrolling
                           },
                           "& > div > div:nth-of-type(2)": {
                             transform: "rotateY(180deg)",
@@ -177,12 +242,20 @@ export default function Generate() {
                       >
                         <div>
                           <div>
-                            <Typography variant="h5" component="div">
+                            <Typography
+                              variant="h5"
+                              component="div"
+                              sx={{ color: "#7b1fa2", textAlign: "center" }} // Purple text
+                            >
                               {flashcard.front}
                             </Typography>
                           </div>
                           <div>
-                            <Typography variant="h5" component="div">
+                            <Typography
+                              variant="h5"
+                              component="div"
+                              sx={{ color: "#7b1fa2", textAlign: "center" }} // Purple text
+                            >
                               {flashcard.back}
                             </Typography>
                           </div>
@@ -195,7 +268,17 @@ export default function Generate() {
             ))}
           </Grid>
           <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
-            <Button variant="contained" color="secondary" onClick={handleOpen}>
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#7b1fa2", // Purple background
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "#6a1b9a", // Darker purple on hover
+                },
+              }}
+              onClick={handleOpen}
+            >
               Save
             </Button>
           </Box>
@@ -203,9 +286,9 @@ export default function Generate() {
       )}
 
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Save Flashcards</DialogTitle>
+        <DialogTitle sx={{ color: "#7b1fa2" }}>Save Flashcards</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText sx={{ color: "#7b1fa2" }}>
             Please enter a name for your flashcards collection
           </DialogContentText>
           <TextField
@@ -217,11 +300,44 @@ export default function Generate() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             variant="outlined"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#ab47bc", // Purple border
+                },
+                "&:hover fieldset": {
+                  borderColor: "#8e24aa", // Darker purple border on hover
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "#7b1fa2", // Purple label
+              },
+            }}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={saveFlashcards}>Save</Button>
+          <Button
+            onClick={handleClose}
+            sx={{
+              color: "#7b1fa2",
+              "&:hover": {
+                backgroundColor: "#f3e5f5", // Light purple hover background
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={saveFlashcards}
+            sx={{
+              color: "#7b1fa2",
+              "&:hover": {
+                backgroundColor: "#f3e5f5", // Light purple hover background
+              },
+            }}
+          >
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>
