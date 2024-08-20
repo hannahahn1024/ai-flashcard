@@ -62,6 +62,9 @@ export default function Flashcards() {
 
   return (
     <Container maxWidth="100vw">
+      <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 4, textAlign: 'center', color: "#7b1fa2" }}>
+        Collection
+      </Typography>
       <Grid
         container
         spacing={3}

@@ -4,7 +4,6 @@ import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { db } from "@/firebase";
-
 import { useSearchParams } from "next/navigation";
 import {
   Box,
@@ -24,7 +23,7 @@ import {
   DialogActions,
 } from "@mui/material";
 
-export default function flashcard() {
+export default function Flashcard() {  // Updated function name to start with uppercase "F"
   const { isLoaded, isSignedIn, user } = useUser();
   const [flashcards, setFlashcards] = useState([]);
   const [flipped, setFlipped] = useState([]);
